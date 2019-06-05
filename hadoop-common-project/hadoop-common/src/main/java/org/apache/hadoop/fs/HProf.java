@@ -8,8 +8,8 @@ import java.net.InetAddress;
 
 public class HProf {
 
-    // public final String pathHprofFile = "/home/hduser/local/";
-    public final String pathHprofFile = "/home/rgmacedo/Dropbox/PhD/projects/";
+    public final String pathHprofFile = "/home/hduser/local/";
+    // public final String pathHprofFile = "/home/rgmacedo/Dropbox/PhD/projects/";
     public String hprofFile;
 
     public Writer hprofWriter;
