@@ -15,6 +15,7 @@
 .settings
 target
 build
+.vscode
 
 # External tool builders
 */.externalToolBuilders

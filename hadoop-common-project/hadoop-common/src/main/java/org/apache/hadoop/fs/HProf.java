@@ -101,19 +101,19 @@ public class HProf {
     }
 
 
-    public static void main (String[] args) throws InterruptedException {
-        HProf hprof = new HProf();
+    // public static void main (String[] args) throws InterruptedException {
+    //     HProf hprof = new HProf();
         
-        hprof.initHprofWriter();
-        System.out.println(">> " + hprof.generateLogFile());
+    //     hprof.initHprofWriter();
+    //     System.out.println(">> " + hprof.generateLogFile());
         
-        for (int i = 0; i < 85; i++) {
-            hprof.writeLogMessage(String.valueOf(i));
-        }
+    //     for (int i = 0; i < 85; i++) {
+    //         hprof.writeLogMessage(String.valueOf(i));
+    //     }
 
-        Thread.sleep(10000);
+    //     Thread.sleep(10000);
 
-        hprof.closeHprofWriter();
-    }
+    //     hprof.closeHprofWriter();
+    // }
 
 }
