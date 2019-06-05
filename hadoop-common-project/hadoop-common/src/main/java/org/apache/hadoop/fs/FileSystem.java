@@ -209,6 +209,7 @@ public abstract class FileSystem extends Configured implements Closeable {
         CommonConfigurationKeys.FS_CLIENT_RESOLVE_REMOTE_SYMLINKS_DEFAULT);
 
     this.hprof = new HProf();
+    LOG.info("new HProf()");
   }
 
   /**
@@ -580,6 +581,7 @@ public abstract class FileSystem extends Configured implements Closeable {
       Path file, FsPermission permission) throws IOException {
 
     hprof.writeLogMessage("create(fs,file,permission)");
+    LOG.info("hprof.writeLogMessage - create");
 
     // create the file with default permission
     FSDataOutputStream out = fs.create(file);
@@ -604,6 +606,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   throws IOException {
 
     hprof.writeLogMessage("mkdirs(fs,dir,permission)");
+    LOG.info("hprof.writeLogMessage - mkdirs");
 
     // create the directory using the default permission
     boolean result = fs.mkdirs(dir);
@@ -678,6 +681,7 @@ public abstract class FileSystem extends Configured implements Closeable {
       long start, long len) throws IOException {
 
     hprof.writeLogMessage("getFileBlockLocations(file,start,len)");
+    LOG.info("hprof.writeLogMessage - getFileBlockLocations");
     
     if (file == null) {
       return null;
@@ -790,6 +794,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataInputStream open(Path f) throws IOException {
     hprof.writeLogMessage("open(f)");
+    LOG.info("hprof.writeLogMessage - open");
+    
     return open(f, getConf().getInt("io.file.buffer.size", 4096));
   }
 
@@ -800,6 +806,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream create(Path f) throws IOException {
     hprof.writeLogMessage("create(f)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, true);
   }
 
@@ -812,6 +820,8 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FSDataOutputStream create(Path f, boolean overwrite)
       throws IOException {
     hprof.writeLogMessage("create(f, overwrite)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, overwrite, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   getDefaultReplication(f),
@@ -828,6 +838,8 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FSDataOutputStream create(Path f, Progressable progress) 
       throws IOException {
     hprof.writeLogMessage("create(f, progress)");
+    LOG.info("hprof.writeLogMessage - create");
+    
     return create(f, true, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   getDefaultReplication(f),
@@ -843,6 +855,8 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FSDataOutputStream create(Path f, short replication)
       throws IOException {
     hprof.writeLogMessage("create(f, replication)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, true, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   replication,
@@ -860,6 +874,8 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FSDataOutputStream create(Path f, short replication, 
       Progressable progress) throws IOException {
     hprof.writeLogMessage("create(f, replication, progress)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, true, 
                   getConf().getInt(
                       CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY,
@@ -881,6 +897,8 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    int bufferSize
                                    ) throws IOException {
     hprof.writeLogMessage("create(f, overwrite, bufferSize)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, overwrite, bufferSize, 
                   getDefaultReplication(f),
                   getDefaultBlockSize(f));
@@ -900,6 +918,8 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    Progressable progress
                                    ) throws IOException {
     hprof.writeLogMessage("create(f, overwrite, bufferSize, progress)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, overwrite, bufferSize, 
                   getDefaultReplication(f),
                   getDefaultBlockSize(f), progress);
@@ -921,6 +941,8 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    long blockSize
                                    ) throws IOException {
     hprof.writeLogMessage("create(f, overwrite, bufferSize, replication, blockSize)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, overwrite, bufferSize, replication, blockSize, null);
   }
 
@@ -941,6 +963,8 @@ public abstract class FileSystem extends Configured implements Closeable {
                                             Progressable progress
                                             ) throws IOException {
     hprof.writeLogMessage("create(overwrite, bufferSize, replication, blockSize, progress)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return this.create(f, FsPermission.getFileDefault().applyUMask(
         FsPermission.getUMask(getConf())), overwrite, bufferSize,
         replication, blockSize, progress);
@@ -989,6 +1013,8 @@ public abstract class FileSystem extends Configured implements Closeable {
       long blockSize,
       Progressable progress) throws IOException {
     hprof.writeLogMessage("create(f, permission, flags, bufferSize, replication, blockSize, progress)");
+    LOG.info("hprof.writeLogMessage - create");
+
     return create(f, permission, flags, bufferSize, replication,
         blockSize, progress, null);
   }
@@ -1017,6 +1043,8 @@ public abstract class FileSystem extends Configured implements Closeable {
       Progressable progress,
       ChecksumOpt checksumOpt) throws IOException {
     hprof.writeLogMessage("create(f, permission, flags, bufferSize, replication, blockSize, progress, checksumOpt)");
+    LOG.info("hprof.writeLogMessage - create");
+    
     // Checksum options are ignored by default. The file systems that
     // implement checksum need to override this method. The full
     // support is currently only available in DFS.
