@@ -613,6 +613,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     sb.append(permission.toString());
 
     hprof.writeLogMessage(MessageType.META, "mkdirs", sb.toString());
+    hprof.writeLogMessage(MessageType.META, "mkdirs", "";
 
     // create the directory using the default permission
     boolean result = fs.mkdirs(dir);
@@ -635,6 +636,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   protected void checkPath(Path path) {    
     hprof.writeLogMessage(MessageType.META, "checkPath", path.toString());
+    hprof.writeLogMessage(MessageType.META, "checkPath", "path.toString()");
 
     URI uri = path.toUri();
     String thatScheme = uri.getScheme();
@@ -694,6 +696,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     sb.append(len);
         
     hprof.writeLogMessage(MessageType.META, "getFileBlockLocations", sb.toString());
+    hprof.writeLogMessage(MessageType.META, "getFileBlockLocations", "sb.toString()");
         
     if (file == null) {
       return null;
@@ -804,6 +807,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataInputStream open(Path f) throws IOException {
     hprof.writeLogMessage(MessageType.DATA, "open", f.toString());
+    hprof.writeLogMessage(MessageType.DATA, "open", "f.toString()");
     
     return open(f, getConf().getInt("io.file.buffer.size", 4096));
   }
@@ -1048,6 +1052,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     sb.append(blockSize);
 
     hprof.writeLogMessage(MessageType.DATA, "create(1021)", sb.toString());
+    hprof.writeLogMessage(MessageType.DATA, "create(1021)", "sb.toString()");
     
     return create(f, permission, flags, bufferSize, replication,
         blockSize, progress, null);
@@ -1293,6 +1298,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream append(Path f) throws IOException {
     hprof.writeLogMessage(MessageType.DATA, "append", f.toString());
+    hprof.writeLogMessage(MessageType.DATA, "append", "f.toString()");
     return append(f, getConf().getInt("io.file.buffer.size", 4096), null);
   }
   /**
@@ -1304,6 +1310,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream append(Path f, int bufferSize) throws IOException {
     hprof.writeLogMessage(MessageType.DATA, "append", f.toString() + "|" + bufferSize);
+    hprof.writeLogMessage(MessageType.DATA, "append", "f.toString() + | + bufferSize");
     return append(f, bufferSize, null);
   }
 
