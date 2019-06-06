@@ -99,7 +99,7 @@ public abstract class FileSystem extends Configured implements Closeable {
 
   public static final Log LOG = LogFactory.getLog(FileSystem.class);
 
-  public static HProf hprof = new HProf();
+  public static HProf hprof = new HProf(LOG);
 
   /**
    * Priority of the FileSystem shutdown hook.

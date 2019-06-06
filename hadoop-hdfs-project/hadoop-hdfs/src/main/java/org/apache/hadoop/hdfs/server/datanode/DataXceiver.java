@@ -114,7 +114,7 @@ class DataXceiver extends Receiver implements Runnable {
   private OutputStream socketOut;
   private BlockReceiver blockReceiver = null;
 
-  public static HProf hprof;
+  // public static HProf hprof;
   
   /**
    * Client Name used in previous operation. Not available on first request

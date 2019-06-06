@@ -6,6 +6,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 
+import org.apache.commons.logging.Log;
+
 public class HProf {
 
     // public final String pathHprofFile = "/home/rgmacedo/Dropbox/PhD/projects/hadoop/";
@@ -14,25 +16,29 @@ public class HProf {
     public final String pathHprofLogging = "/home/hduser/dfs/hprof-logging.log";
     public String hprofFile;
     public String hprofLogging;
-
+    
     public Writer hprofWriter;
-
+    
     private int messageCounter;
     private int messageFlush;
     private int backgroundMessageCounter;
     private int dataMessageCounter;
     private int metadataMessageCounter;
-    private final int flusher = 100;
-
+    private final int flusher = 10;
+    
     public static enum MessageType {
         BACK, DATA, META, HPROF
     };
-
+    
+    public Log LOG;
+    
     /**
      * HProf class HProf is a Hadoop-based profile that profiles user-defined
      * messages.
      */
-    public HProf() {
+    public HProf(Log log) {
+        LOG = log;
+
         this.hprofFile = this.generateLogFile();
 
         this.messageCounter = 0;
@@ -43,7 +49,8 @@ public class HProf {
 
         this.initHprofWriter();
 
-        System.out.println(">> new HProf() created ...");
+
+        LOG.info(">> new HProf() created ...");
     }
 
     public String generateLogFile() {
@@ -54,7 +61,7 @@ public class HProf {
                     + ".log";
 
         } catch (Exception e) {
-            System.out.println("HProf.generateLogFile >> UnknownHostException: " + e.getMessage());
+            LOG.info("HProf.generateLogFile >> UnknownHostException: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -70,21 +77,20 @@ public class HProf {
     }
 
     public void initHprofWriter() {
-        System.out.println(">> HProf.initHprofWriter");
+        LOG.info(">> HProf.initHprofWriter");
         try {
             if (this.hprofFile != null) {
                 this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.hprofFile)));
             }
         } catch (Exception e) {
-            System.out.println("HProf.initHprofWriter >> FileNotFoundException: " + e.getMessage());
+            LOG.info("HProf.initHprofWriter >> FileNotFoundException: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public void writeLogMessage(MessageType type, String method, String message) {
         try {
-            this.hprofWriter
-                    .append(System.currentTimeMillis() + " " + type.toString() + " " + method + ": " + message + "\n");
+            this.hprofWriter.append(System.currentTimeMillis() + " " + type.toString() + " " + method + ": " + message + "\n");
 
             this.messageCounter++;
             this.messageFlush++;
@@ -108,7 +114,7 @@ public class HProf {
             }
 
         } catch (Exception e) {
-            System.out.println("HProf.writeLogMessage >> IOException: " + e.getMessage());
+            LOG.info("HProf.writeLogMessage >> IOException: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -118,11 +124,11 @@ public class HProf {
      * There is no need to flush the stream, since close() already does that.
      */
     public void closeHprofWriter() {
-        System.out.println(">> HProf.closeHprofWriter");
+        LOG.info(">> HProf.closeHprofWriter");
         try {
             this.hprofWriter.close();
         } catch (Exception e) {
-            System.out.println("HProf.closeHprofWriter >> IOException: " + e.getMessage());
+            LOG.info("HProf.closeHprofWriter >> IOException: " + e.getMessage());
             e.printStackTrace();
         }
     }
