@@ -36,10 +36,10 @@ public class HProf {
      * HProf class HProf is a Hadoop-based profile that profiles user-defined
      * messages.
      */
-    public HProf(Log log) {
+    public HProf(Log log, String classpath) {
         LOG = log;
 
-        this.hprofFile = this.generateLogFile();
+        this.hprofFile = this.generateLogFile(classpath);
 
         this.messageCounter = 0;
         this.messageFlush = 0;
@@ -53,12 +53,18 @@ public class HProf {
         LOG.info(">> new HProf() created ...");
     }
 
-    public String generateLogFile() {
+    public String generateLogFile(String classpath) {
         String logFile = null;
 
         try {
-            logFile = this.pathHprofFile + InetAddress.getLocalHost().getHostName() + "." + System.currentTimeMillis()
-                    + ".log";
+            logFile = 
+                this.pathHprofFile + 
+                InetAddress.getLocalHost().getHostName() + 
+                "-" + 
+                classpath +
+                "-" + 
+                System.currentTimeMillis() +
+                 ".log";
 
         } catch (Exception e) {
             LOG.info("HProf.generateLogFile >> UnknownHostException: " + e.getMessage());

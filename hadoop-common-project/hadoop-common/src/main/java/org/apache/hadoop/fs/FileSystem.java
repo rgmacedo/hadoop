@@ -99,7 +99,7 @@ public abstract class FileSystem extends Configured implements Closeable {
 
   public static final Log LOG = LogFactory.getLog(FileSystem.class);
 
-  public static HProf hprof = new HProf(LOG);
+  public static HProf hprof = new HProf(LOG, "FileSystem");
 
   /**
    * Priority of the FileSystem shutdown hook.
@@ -139,6 +139,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   static void addFileSystemForTesting(URI uri, Configuration conf,
       FileSystem fs) throws IOException {
+    hprof.writeLogMessage(MessageType.BACK, "addFileSystemForTesting", uri.toString() + " | " + fs.toString());
+
     CACHE.map.put(new Cache.Key(uri, conf), fs);
   }
 
@@ -179,6 +181,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @return the uri of the default filesystem
    */
   public static URI getDefaultUri(Configuration conf) {
+    hprof.writeLogMessage(MessageType.BACK, "getDefaultUri", "");
+
     return URI.create(fixName(conf.get(FS_DEFAULT_NAME_KEY, DEFAULT_FS)));
   }
 
@@ -187,6 +191,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @param uri the new default filesystem uri
    */
   public static void setDefaultUri(Configuration conf, URI uri) {
+    hprof.writeLogMessage(MessageType.BACK, "setDefaultUri", uri.toString());
+    
     conf.set(FS_DEFAULT_NAME_KEY, uri.toString());
   }
 
@@ -204,13 +210,12 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @param conf the configuration
    */
   public void initialize(URI name, Configuration conf) throws IOException {
+    hprof.writeLogMessage(MessageType.BACK, "initialize", name.toString());
+
     statistics = getStatistics(name.getScheme(), getClass());    
     resolveSymlinks = conf.getBoolean(
         CommonConfigurationKeys.FS_CLIENT_RESOLVE_REMOTE_SYMLINKS_KEY,
         CommonConfigurationKeys.FS_CLIENT_RESOLVE_REMOTE_SYMLINKS_DEFAULT);
-
-    // this.hprof = new HProf();
-    LOG.info("new HProf()");
   }
 
   /**
@@ -254,6 +259,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @see NetUtils#getCanonicalUri(URI, int)
    */
   protected URI canonicalizeUri(URI uri) {
+    hprof.writeLogMessage(MessageType.BACK, "canonicalizeUri", uri.toString());
+
     if (uri.getPort() == -1 && getDefaultPort() > 0) {
       // reconstruct the uri with the default port set
       try {
@@ -355,6 +362,8 @@ public abstract class FileSystem extends Configured implements Closeable {
    * The entire URI is passed to the FileSystem instance's initialize method.
    */
   public static FileSystem get(URI uri, Configuration conf) throws IOException {
+    hprof.writeLogMessage(MessageType.BACK, "get", uri.toString());
+
     String scheme = uri.getScheme();
     String authority = uri.getAuthority();
 
@@ -580,10 +589,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public static FSDataOutputStream create(FileSystem fs,
       Path file, FsPermission permission) throws IOException {
-
-    // hprof.writeLogMessage(MessageType.DATA, "create", "");
-    // LOG.info("hprof.writeLogMessage - create");
-
     // create the file with default permission
     FSDataOutputStream out = fs.create(file);
     // set its permission to the supplied one
@@ -607,13 +612,12 @@ public abstract class FileSystem extends Configured implements Closeable {
   throws IOException {
     StringBuilder sb = new StringBuilder();
     sb.append(fs.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(dir.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(permission.toString());
 
     hprof.writeLogMessage(MessageType.META, "mkdirs", sb.toString());
-    hprof.writeLogMessage(MessageType.META, "mkdirs", "");
 
     // create the directory using the default permission
     boolean result = fs.mkdirs(dir);
@@ -636,7 +640,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   protected void checkPath(Path path) {    
     hprof.writeLogMessage(MessageType.META, "checkPath", path.toString());
-    hprof.writeLogMessage(MessageType.META, "checkPath", "path.toString()");
 
     URI uri = path.toUri();
     String thatScheme = uri.getScheme();
@@ -690,13 +693,12 @@ public abstract class FileSystem extends Configured implements Closeable {
 
     StringBuilder sb = new StringBuilder();
     sb.append(file.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(start);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(len);
         
     hprof.writeLogMessage(MessageType.META, "getFileBlockLocations", sb.toString());
-    hprof.writeLogMessage(MessageType.META, "getFileBlockLocations", "sb.toString()");
         
     if (file == null) {
       return null;
@@ -807,7 +809,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataInputStream open(Path f) throws IOException {
     hprof.writeLogMessage(MessageType.DATA, "open", f.toString());
-    hprof.writeLogMessage(MessageType.DATA, "open", "f.toString()");
     
     return open(f, getConf().getInt("io.file.buffer.size", 4096));
   }
@@ -818,9 +819,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @param f the file to create
    */
   public FSDataOutputStream create(Path f) throws IOException {
-    // hprof.writeLogMessage("create(f)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, true);
   }
 
@@ -832,9 +830,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream create(Path f, boolean overwrite)
       throws IOException {
-    // hprof.writeLogMessage("create(f, overwrite)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, overwrite, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   getDefaultReplication(f),
@@ -850,9 +845,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream create(Path f, Progressable progress) 
       throws IOException {
-    // hprof.writeLogMessage("create(f, progress)");
-    // LOG.info("hprof.writeLogMessage - create");
-    
     return create(f, true, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   getDefaultReplication(f),
@@ -867,9 +859,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream create(Path f, short replication)
       throws IOException {
-    // hprof.writeLogMessage("create(f, replication)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, true, 
                   getConf().getInt("io.file.buffer.size", 4096),
                   replication,
@@ -886,9 +875,6 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FSDataOutputStream create(Path f, short replication, 
       Progressable progress) throws IOException {
-    // hprof.writeLogMessage("create(f, replication, progress)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, true, 
                   getConf().getInt(
                       CommonConfigurationKeysPublic.IO_FILE_BUFFER_SIZE_KEY,
@@ -909,9 +895,6 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    boolean overwrite,
                                    int bufferSize
                                    ) throws IOException {
-    // hprof.writeLogMessage("create(f, overwrite, bufferSize)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, overwrite, bufferSize, 
                   getDefaultReplication(f),
                   getDefaultBlockSize(f));
@@ -930,9 +913,6 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    int bufferSize,
                                    Progressable progress
                                    ) throws IOException {
-    // hprof.writeLogMessage("create(f, overwrite, bufferSize, progress)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, overwrite, bufferSize, 
                   getDefaultReplication(f),
                   getDefaultBlockSize(f), progress);
@@ -953,9 +933,6 @@ public abstract class FileSystem extends Configured implements Closeable {
                                    short replication,
                                    long blockSize
                                    ) throws IOException {
-    // hprof.writeLogMessage("create(f, overwrite, bufferSize, replication, blockSize)");
-    // LOG.info("hprof.writeLogMessage - create");
-
     return create(f, overwrite, bufferSize, replication, blockSize, null);
   }
 
@@ -979,13 +956,13 @@ public abstract class FileSystem extends Configured implements Closeable {
 
     StringBuilder sb = new StringBuilder();
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(overwrite);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(bufferSize);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(replication);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(blockSize);
 
     hprof.writeLogMessage(MessageType.DATA, "create", sb.toString());
@@ -1040,19 +1017,18 @@ public abstract class FileSystem extends Configured implements Closeable {
 
     StringBuilder sb = new StringBuilder();
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(permission.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(flags.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(bufferSize);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(replication);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(blockSize);
 
     hprof.writeLogMessage(MessageType.DATA, "create(1021)", sb.toString());
-    hprof.writeLogMessage(MessageType.DATA, "create(1021)", "sb.toString()");
     
     return create(f, permission, flags, bufferSize, replication,
         blockSize, progress, null);
@@ -1104,15 +1080,15 @@ public abstract class FileSystem extends Configured implements Closeable {
     
     StringBuilder sb = new StringBuilder();
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(absolutePermission.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(flag.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(bufferSize);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(replication);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(blockSize);
     
     hprof.writeLogMessage(MessageType.META, "primitiveCreate", sb.toString());
@@ -1146,7 +1122,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     throws IOException {
     StringBuilder sb = new StringBuilder();
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(absolutePermission.toString());
 
     hprof.writeLogMessage(MessageType.META, "primitiveMkdir", sb.toString());
@@ -1171,9 +1147,9 @@ public abstract class FileSystem extends Configured implements Closeable {
 
     StringBuilder sb = new StringBuilder();
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(absolutePermission.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(createParent);
 
     hprof.writeLogMessage(MessageType.META, "primitiveMkdir", sb.toString());
@@ -1309,7 +1285,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    * @throws IOException
    */
   public FSDataOutputStream append(Path f, int bufferSize) throws IOException {
-    hprof.writeLogMessage(MessageType.DATA, "append", f.toString() + "|" + bufferSize);
+    hprof.writeLogMessage(MessageType.DATA, "append", f.toString() + " | " + bufferSize);
     hprof.writeLogMessage(MessageType.DATA, "append", "f.toString() + | + bufferSize");
     return append(f, bufferSize, null);
   }
@@ -1359,7 +1335,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public boolean setReplication(Path src, short replication)
     throws IOException {
-    hprof.writeLogMessage(MessageType.BACK, "setReplication", src.toString() + "|" + replication);
+    hprof.writeLogMessage(MessageType.BACK, "setReplication", src.toString() + " | " + replication);
     return true;
   }
 
@@ -1672,9 +1648,9 @@ public abstract class FileSystem extends Configured implements Closeable {
     
     StringBuilder sb = new StringBuilder();
     sb.append(results.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(f.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(filter.toString());
 
     hprof.writeLogMessage(MessageType.META, "listStatus", sb.toString());
@@ -1719,7 +1695,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   public FileStatus[] listStatus(Path f, PathFilter filter) 
                                    throws FileNotFoundException, IOException {
 
-    hprof.writeLogMessage(MessageType.META, "listStatus", f.toString() + "|" + filter.toString());
+    hprof.writeLogMessage(MessageType.META, "listStatus", f.toString() + " | " + filter.toString());
 
     ArrayList<FileStatus> results = new ArrayList<FileStatus>();
     listStatus(results, f, filter);
@@ -1757,7 +1733,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FileStatus[] listStatus(Path[] files, PathFilter filter)
       throws FileNotFoundException, IOException {
-    hprof.writeLogMessage(MessageType.META, "listStatus", files.toString() + "|" + filter.toString());
+    hprof.writeLogMessage(MessageType.META, "listStatus", files.toString() + " | " + filter.toString());
 
     ArrayList<FileStatus> results = new ArrayList<FileStatus>();
     for (int i = 0; i < files.length; i++) {
@@ -1844,7 +1820,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public FileStatus[] globStatus(Path pathPattern, PathFilter filter)
       throws IOException {
-    hprof.writeLogMessage(MessageType.META, "globStatus", pathPattern.toString() + "|" + filter.toString());
+    hprof.writeLogMessage(MessageType.META, "globStatus", pathPattern.toString() + " | " + filter.toString());
 
     return new Globber(this, pathPattern, filter).glob();
   }
@@ -1885,7 +1861,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   protected RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f,
       final PathFilter filter)
   throws FileNotFoundException, IOException {
-    hprof.writeLogMessage(MessageType.META, "listLocatedStatus", f.toString() + "|" + filter.toString());
+    hprof.writeLogMessage(MessageType.META, "listLocatedStatus", f.toString() + " | " + filter.toString());
 
     return new RemoteIterator<LocatedFileStatus>() {
       private final FileStatus[] stats = listStatus(f, filter);
@@ -1963,7 +1939,7 @@ public abstract class FileSystem extends Configured implements Closeable {
   public RemoteIterator<LocatedFileStatus> listFiles(
       final Path f, final boolean recursive)
   throws FileNotFoundException, IOException {
-    hprof.writeLogMessage(MessageType.META, "listFiles", f.toString() + "|" + recursive);
+    hprof.writeLogMessage(MessageType.META, "listFiles", f.toString() + " | " + recursive);
 
     return new RemoteIterator<LocatedFileStatus>() {
       private Stack<RemoteIterator<LocatedFileStatus>> itors = 
@@ -2136,11 +2112,11 @@ public abstract class FileSystem extends Configured implements Closeable {
     throws IOException {
     StringBuilder sb = new StringBuilder();
     sb.append(delSrc);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(overwrite);
-    sb.append("|");
+    sb.append(" | ");
     sb.append(srcs.toString());
-    sb.append("|");
+    sb.append(" | ");
     sb.append(dst.toString());
 
     hprof.writeLogMessage(MessageType.META, "copyFromLocalFile", sb.toString());
@@ -2163,11 +2139,11 @@ public abstract class FileSystem extends Configured implements Closeable {
     throws IOException {
       StringBuilder sb = new StringBuilder();
       sb.append(delSrc);
-      sb.append("|");
+      sb.append(" | ");
       sb.append(overwrite);
-      sb.append("|");
+      sb.append(" | ");
       sb.append(src.toString());
-      sb.append("|");
+      sb.append(" | ");
       sb.append(dst.toString());
   
       hprof.writeLogMessage(MessageType.META, "copyFromLocalFile(2149)", sb.toString());
@@ -2234,11 +2210,11 @@ public abstract class FileSystem extends Configured implements Closeable {
 
         StringBuilder sb = new StringBuilder();
         sb.append(delSrc);
-        sb.append("|");
+        sb.append(" | ");
         sb.append(src.toString());
-        sb.append("|");
+        sb.append(" | ");
         sb.append(dst.toString());
-        sb.append("|");
+        sb.append(" | ");
         sb.append(useRawLocalFileSystem);
     
         hprof.writeLogMessage(MessageType.META, "copyToLocalFile", sb.toString());
@@ -2263,7 +2239,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public Path startLocalOutput(Path fsOutputFile, Path tmpLocalFile)
     throws IOException {
-    hprof.writeLogMessage(MessageType.META, "startLocalOutput", fsOutputFile.toString() + "|" + tmpLocalFile.toString());
+    hprof.writeLogMessage(MessageType.META, "startLocalOutput", fsOutputFile.toString() + " | " + tmpLocalFile.toString());
     return tmpLocalFile;
   }
 
