@@ -101,7 +101,7 @@ import org.apache.hadoop.util.Time;
 class DataXceiver extends Receiver implements Runnable {
   public static final Log LOG = DataNode.LOG;
   static final Log ClientTraceLog = DataNode.ClientTraceLog;
-  public static HProf hprof = new HProf(LOG, "DataXceiver");
+  public static HProf hprof;
   
   private Peer peer;
   private final String remoteAddress; // address of remote side
@@ -131,6 +131,8 @@ class DataXceiver extends Receiver implements Runnable {
   
   private DataXceiver(Peer peer, DataNode datanode,
       DataXceiverServer dataXceiverServer) throws IOException {
+    
+    hprof = new HProf(LOG, "DataXceiver");
 
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
@@ -534,6 +536,8 @@ class DataXceiver extends Receiver implements Runnable {
 
 
     hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
+    LOG.info("Hprof: DATA readBlock "+sb.toString());
+    LOG.info("Hprof: DATA readBlock ...");
 
     previousOpClientName = clientName;
     long read = 0;
@@ -675,6 +679,9 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(pinning);
 
     hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
+    LOG.info("Hprof: DATA writeBlock "+sb.toString());
+    LOG.info("Hprof: DATA writeBlock ...");
+    
 
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);
