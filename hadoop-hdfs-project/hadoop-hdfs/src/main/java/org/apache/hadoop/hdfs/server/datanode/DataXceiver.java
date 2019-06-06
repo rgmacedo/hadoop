@@ -136,7 +136,7 @@ class DataXceiver extends Receiver implements Runnable {
       DataXceiverServer dataXceiverServer) throws IOException {
     super(datanode.tracer);
 
-    hprof = new HProf(LOG, "DataXceiver", 1);
+    hprof = new HProf(null, "DataXceiver", 1);
     
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
