@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
+import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
@@ -117,6 +118,8 @@ class DataXceiver extends Receiver implements Runnable {
   private final int smallBufferSize;
   private Thread xceiver = null;
 
+  public static HProf hprof;
+
   /**
    * Client Name used in previous operation. Not available on first request
    * on the socket.
@@ -131,6 +134,9 @@ class DataXceiver extends Receiver implements Runnable {
   private DataXceiver(Peer peer, DataNode datanode,
       DataXceiverServer dataXceiverServer) throws IOException {
     super(datanode.tracer);
+
+    hprof = new HProf(LOG, "DataXceiver", 1);
+    
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
     this.socketIn = peer.getInputStream();
@@ -568,6 +574,25 @@ class DataXceiver extends Receiver implements Runnable {
       final long length,
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(block.toString());
+    sb.append(" | ");
+    sb.append(clientName);
+    sb.append(" | ");
+    sb.append(blockOffset);
+    sb.append(" | ");
+    sb.append(length);
+    sb.append(" | ");
+    sb.append(sendChecksum);
+    sb.append(" | ");
+    sb.append(cachingStrategy.toString());
+
+
+    hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
+    LOG.info("Hprof: DATA readBlock "+sb.toString());
+    LOG.info("Hprof: DATA readBlock ...");
+
     previousOpClientName = clientName;
     long read = 0;
     updateCurrentThreadName("Sending block " + block);
@@ -674,6 +699,43 @@ class DataXceiver extends Receiver implements Runnable {
       boolean allowLazyPersist,
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
+
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(block.toString());
+    sb.append(" | ");
+    sb.append(storageType);
+    sb.append(" | ");
+    sb.append(clientname);
+    sb.append(" | ");
+    sb.append(Arrays.asList(targets));
+    sb.append(" | ");
+    sb.append(Arrays.asList(targetStorageTypes));
+    sb.append(" | ");
+    sb.append(srcDataNode.toString());
+    sb.append(" | ");
+    sb.append(stage.toString());
+    sb.append(" | ");
+    sb.append(pipelineSize);
+    sb.append(" | ");
+    sb.append(minBytesRcvd);
+    sb.append(" | ");
+    sb.append(maxBytesRcvd);
+    sb.append(" | ");
+    sb.append(latestGenerationStamp);
+    sb.append(" | ");
+    sb.append(requestedChecksum.toString());
+    sb.append(" | ");
+    sb.append(cachingStrategy.toString());
+    sb.append(" | ");
+    sb.append(allowLazyPersist);
+    sb.append(" | ");
+    sb.append(pinning);
+
+    hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
+    LOG.info("Hprof: DATA writeBlock "+sb.toString());
+    LOG.info("Hprof: DATA writeBlock ...");
+
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);
     final boolean isDatanode = clientname.length() == 0;

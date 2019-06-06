@@ -16,6 +16,7 @@
 .settings
 target
 build
+.vscode
 
 # Filesystem contract test options and credentials
 auth-keys.xml
