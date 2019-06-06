@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
+import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.net.Peer;
@@ -112,6 +113,8 @@ class DataXceiver extends Receiver implements Runnable {
   private final InputStream socketIn;
   private OutputStream socketOut;
   private BlockReceiver blockReceiver = null;
+
+  public static HProf hprof;
   
   /**
    * Client Name used in previous operation. Not available on first request

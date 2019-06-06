@@ -8,20 +8,35 @@ import java.net.InetAddress;
 
 public class HProf {
 
-    public final String pathHprofFile = "/home/hduser/local/";
-    // public final String pathHprofFile = "/home/rgmacedo/Dropbox/PhD/projects/";
+    public final String pathHprofFile       = "/home/hduser/local/";
+    public final String pathHprofLogging    = "/home/hduser/local/hprof-logging.log";
     public String hprofFile;
-
+    public String hprofLogging;
+    
     public Writer hprofWriter;
     
-    private int messageCounter;
-    public int messageFlush;
-    private final int flusher = 10;
+    private int         messageCounter;
+    private int         messageFlush;
+    private int         backgroundMessageCounter;
+    private int         dataMessageCounter;
+    private int         metadataMessageCounter;
+    private final int   flusher = 100;
+    
+    public static enum MessageType {BACK, DATA, META, HPROF};
 
+
+    /**
+     * HProf class
+     * HProf is a Hadoop-based profile that profiles user-defined messages.
+     */
     public HProf() {
         this.hprofFile = this.generateLogFile();
-        this.messageCounter = 0;
-        this.messageFlush = 0;
+        
+        this.messageCounter             = 0;
+        this.messageFlush               = 0;
+        this.backgroundMessageCounter   = 0;
+        this.dataMessageCounter         = 0;
+        this.metadataMessageCounter     = 0;
 
         this.initHprofWriter();
 
@@ -65,11 +80,12 @@ public class HProf {
         }
     }
 
-    public void writeLogMessage(String message) {
+    public void writeLogMessage(MessageType type, String method, String message) {
         try {
             this.hprofWriter.append(
-                "[" + this.messageCounter + ":" +
-                System.currentTimeMillis() + "] " +
+                System.currentTimeMillis() + " " + 
+                type.toString() + " " + 
+                method + ": " + 
                 message + "\n");
 
             this.messageCounter++;
@@ -79,6 +95,19 @@ public class HProf {
                 this.hprofWriter.flush();
                 this.messageFlush = 0;
             }
+
+            switch (type) {
+                case BACK:
+                    this.backgroundMessageCounter++;
+                    break;
+                case DATA:
+                    this.dataMessageCounter++;
+                    break;
+                case META:
+                    this.metadataMessageCounter++;
+                default:
+                    break;
+            } 
 
         } catch (Exception e) {
             System.out.println ("HProf.writeLogMessage >> IOException: " + e.getMessage());
