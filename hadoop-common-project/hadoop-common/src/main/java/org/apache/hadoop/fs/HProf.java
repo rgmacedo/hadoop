@@ -24,7 +24,7 @@ public class HProf {
     private int backgroundMessageCounter;
     private int dataMessageCounter;
     private int metadataMessageCounter;
-    private final int flusher = 10;
+    private int flusher;
     
     public static enum MessageType {
         BACK, DATA, META, HPROF
@@ -36,11 +36,12 @@ public class HProf {
      * HProf class HProf is a Hadoop-based profile that profiles user-defined
      * messages.
      */
-    public HProf(Log log, String classpath) {
+    public HProf(Log log, String classpath, int flushSize) {
         LOG = log;
 
         this.hprofFile = this.generateLogFile(classpath);
 
+        this.flusher = flushSize;
         this.messageCounter = 0;
         this.messageFlush = 0;
         this.backgroundMessageCounter = 0;

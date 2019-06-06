@@ -22,10 +22,13 @@ import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
+import org.apache.hadoop.fs.HProf.MessageType;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
@@ -58,10 +61,14 @@ import com.google.protobuf.Message;
 @InterfaceStability.Evolving
 public class Sender implements DataTransferProtocol {
   private final DataOutputStream out;
+  
+  public static HProf hprof;
 
   /** Create a sender for DataTransferProtocol with a output stream. */
   public Sender(final DataOutputStream out) {
     this.out = out;    
+
+    hprof = new HProf(LOG, "Sender", 1);
   }
 
   /** Initialize a operation. */
@@ -102,6 +109,24 @@ public class Sender implements DataTransferProtocol {
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
 
+    StringBuilder sb = new StringBuilder();
+    sb.append(blk.toString());
+    sb.append(" | ");
+    sb.append(clientName);
+    sb.append(" | ");
+    sb.append(blockOffset);
+    sb.append(" | ");
+    sb.append(length);
+    sb.append(" | ");
+    sb.append(sendChecksum);
+    sb.append(" | ");
+    sb.append(cachingStrategy.toString());
+
+
+    hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
+    LOG.info("Hprof: DATA readBlock "+sb.toString());
+    LOG.info("Hprof: DATA readBlock ...");
+
     OpReadBlockProto proto = OpReadBlockProto.newBuilder()
       .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName, blockToken))
       .setOffset(blockOffset)
@@ -132,6 +157,43 @@ public class Sender implements DataTransferProtocol {
       final boolean allowLazyPersist,
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(blk.toString());
+    sb.append(" | ");
+    sb.append(storageType);
+    sb.append(" | ");
+    sb.append(clientName);
+    sb.append(" | ");
+    sb.append(Arrays.asList(targets));
+    sb.append(" | ");
+    sb.append(Arrays.asList(targetStorageTypes));
+    sb.append(" | ");
+    sb.append(source.toString());
+    sb.append(" | ");
+    sb.append(stage.toString());
+    sb.append(" | ");
+    sb.append(pipelineSize);
+    sb.append(" | ");
+    sb.append(minBytesRcvd);
+    sb.append(" | ");
+    sb.append(maxBytesRcvd);
+    sb.append(" | ");
+    sb.append(latestGenerationStamp);
+    sb.append(" | ");
+    sb.append(requestedChecksum.toString());
+    sb.append(" | ");
+    sb.append(cachingStrategy.toString());
+    sb.append(" | ");
+    sb.append(allowLazyPersist);
+    sb.append(" | ");
+    sb.append(pinning);
+
+    hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
+    LOG.info("Hprof: DATA writeBlock "+sb.toString());
+    LOG.info("Hprof: DATA writeBlock ...");
+    
+
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
         blk, clientName, blockToken);
     

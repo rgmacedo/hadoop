@@ -132,7 +132,7 @@ class DataXceiver extends Receiver implements Runnable {
   private DataXceiver(Peer peer, DataNode datanode,
       DataXceiverServer dataXceiverServer) throws IOException {
     
-    hprof = new HProf(LOG, "DataXceiver");
+    hprof = new HProf(LOG, "DataXceiver", 1);
 
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
