@@ -51,6 +51,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
+import org.apache.hadoop.fs.HProf.MessageType;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.net.Peer;
@@ -590,8 +591,8 @@ class DataXceiver extends Receiver implements Runnable {
 
 
     hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
-    LOG.info("Hprof: DATA readBlock "+sb.toString());
-    LOG.info("Hprof: DATA readBlock ...");
+    // LOG.info("Hprof: DATA readBlock "+sb.toString());
+    // LOG.info("Hprof: DATA readBlock ...");
 
     previousOpClientName = clientName;
     long read = 0;
@@ -733,8 +734,8 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(pinning);
 
     hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
-    LOG.info("Hprof: DATA writeBlock "+sb.toString());
-    LOG.info("Hprof: DATA writeBlock ...");
+    // LOG.info("Hprof: DATA writeBlock "+sb.toString());
+    // LOG.info("Hprof: DATA writeBlock ...");
 
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);

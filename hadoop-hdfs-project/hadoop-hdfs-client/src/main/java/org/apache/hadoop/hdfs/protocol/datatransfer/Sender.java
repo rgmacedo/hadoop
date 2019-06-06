@@ -22,10 +22,13 @@ import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
+import org.apache.hadoop.fs.HProf.MessageType;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.CachingStrategyProto;
@@ -65,7 +68,7 @@ public class Sender implements DataTransferProtocol {
   public Sender(final DataOutputStream out) {
     this.out = out;
 
-    hprof = new HProf(LOG, "Sender", 1);
+    hprof = new HProf(null, "Sender", 1);
   }
 
   /** Initialize a operation. */
@@ -119,8 +122,8 @@ public class Sender implements DataTransferProtocol {
 
 
     hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
-    LOG.info("Hprof: DATA readBlock "+sb.toString());
-    LOG.info("Hprof: DATA readBlock ...");
+    // LOG.info("Hprof: DATA readBlock "+sb.toString());
+    // LOG.info("Hprof: DATA readBlock ...");
 
     OpReadBlockProto proto = OpReadBlockProto.newBuilder()
         .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName,
@@ -186,8 +189,8 @@ public class Sender implements DataTransferProtocol {
     sb.append(pinning);
 
     hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
-    LOG.info("Hprof: DATA writeBlock "+sb.toString());
-    LOG.info("Hprof: DATA writeBlock ...");
+    // LOG.info("Hprof: DATA writeBlock "+sb.toString());
+    // LOG.info("Hprof: DATA writeBlock ...");
 
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
         blk, clientName, blockToken);

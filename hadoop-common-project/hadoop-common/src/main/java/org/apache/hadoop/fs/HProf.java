@@ -30,6 +30,7 @@ public class HProf {
         BACK, DATA, META, HPROF
     };
     
+    public boolean hasLog = false;
     public Log LOG;
     
     /**
@@ -37,7 +38,10 @@ public class HProf {
      * messages.
      */
     public HProf(Log log, String classpath, int flushSize) {
-        LOG = log;
+        if (log != null) {
+            LOG = log;
+            hasLog = true;
+        }
 
         this.hprofFile = this.generateLogFile(classpath);
 
@@ -50,8 +54,6 @@ public class HProf {
 
         this.initHprofWriter();
 
-
-        LOG.info(">> new HProf() created ...");
     }
 
     public String generateLogFile(String classpath) {
@@ -68,8 +70,9 @@ public class HProf {
                  ".log";
 
         } catch (Exception e) {
-            LOG.info("HProf.generateLogFile >> UnknownHostException: " + e.getMessage());
-            e.printStackTrace();
+            if (hasLog) {
+                LOG.info("HProf.generateLogFile >> UnknownHostException: " + e.getMessage());
+            }   e.printStackTrace();
         }
 
         return logFile;
@@ -84,13 +87,15 @@ public class HProf {
     }
 
     public void initHprofWriter() {
-        LOG.info(">> HProf.initHprofWriter");
+        // LOG.info(">> HProf.initHprofWriter");
         try {
             if (this.hprofFile != null) {
                 this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.hprofFile)));
             }
         } catch (Exception e) {
-            LOG.info("HProf.initHprofWriter >> FileNotFoundException: " + e.getMessage());
+            if (hasLog) {
+                LOG.info("HProf.initHprofWriter >> FileNotFoundException: " + e.getMessage());
+            }
             e.printStackTrace();
         }
     }
@@ -121,7 +126,9 @@ public class HProf {
             }
 
         } catch (Exception e) {
-            LOG.info("HProf.writeLogMessage >> IOException: " + e.getMessage());
+            if (hasLog) {
+                LOG.info("HProf.writeLogMessage >> IOException: " + e.getMessage());
+            }
             e.printStackTrace();
         }
     }
@@ -131,11 +138,13 @@ public class HProf {
      * There is no need to flush the stream, since close() already does that.
      */
     public void closeHprofWriter() {
-        LOG.info(">> HProf.closeHprofWriter");
+        // LOG.info(">> HProf.closeHprofWriter");
         try {
             this.hprofWriter.close();
         } catch (Exception e) {
-            LOG.info("HProf.closeHprofWriter >> IOException: " + e.getMessage());
+            if (hasLog) {
+                LOG.info("HProf.closeHprofWriter >> IOException: " + e.getMessage());
+            }
             e.printStackTrace();
         }
     }
