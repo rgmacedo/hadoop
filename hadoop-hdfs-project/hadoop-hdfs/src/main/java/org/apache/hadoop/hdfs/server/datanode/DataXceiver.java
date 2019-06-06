@@ -29,15 +29,19 @@ import static org.apache.hadoop.util.Time.monotonicNow;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -49,9 +53,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
-import org.apache.hadoop.fs.HProf;
+// import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
-import org.apache.hadoop.fs.HProf.MessageType;
+// import org.apache.hadoop.fs.HProf.MessageType;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.net.Peer;
@@ -136,7 +140,7 @@ class DataXceiver extends Receiver implements Runnable {
       DataXceiverServer dataXceiverServer) throws IOException {
     super(datanode.tracer);
 
-    hprof = new HProf(null, "DataXceiver", 1);
+    hprof = new HProf("DataXceiver");
     
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
@@ -1467,4 +1471,81 @@ class DataXceiver extends Receiver implements Runnable {
       }
     }
   }
+
+  static class HProf {
+    public final String pathHprofFile = "/home/hduser/dfs/";
+    public String hprofFile;
+    public Writer hprofWriter;
+    
+    public enum MessageType {
+        BACK, DATA, META, HPROF
+    };
+    
+    
+    /**
+     * HProf class HProf is a Hadoop-based profile that profiles user-defined
+     * messages.
+     */
+    public HProf(String classpath) {
+
+        this.hprofFile = this.generateLogFile(classpath);
+        this.initHprofWriter();
+
+    }
+
+    public String generateLogFile(String classpath) {
+        String logFile = null;
+
+        try {
+            logFile = 
+                this.pathHprofFile + 
+                "cloud-" + 
+                classpath +
+                "-" + 
+                System.currentTimeMillis() +
+                ".log";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return logFile;
+    }
+
+
+    public void initHprofWriter() {
+        // LOG.info(">> HProf.initHprofWriter");
+        try {
+            if (this.hprofFile != null) {
+                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.hprofFile)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeLogMessage(MessageType type, String method, String message) {
+        try {
+            this.hprofWriter.append(System.currentTimeMillis() + " " + type.toString() + " " + method + ": " + message + "\n");
+            this.hprofWriter.flush();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 
+     * There is no need to flush the stream, since close() already does that.
+     */
+    public void closeHprofWriter() {
+        // LOG.info(">> HProf.closeHprofWriter");
+        try {
+            hprofWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+  }
+
 }
