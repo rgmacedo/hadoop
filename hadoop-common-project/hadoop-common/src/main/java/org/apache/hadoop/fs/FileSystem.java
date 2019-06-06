@@ -613,7 +613,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     sb.append(permission.toString());
 
     hprof.writeLogMessage(MessageType.META, "mkdirs", sb.toString());
-    hprof.writeLogMessage(MessageType.META, "mkdirs", "";
+    hprof.writeLogMessage(MessageType.META, "mkdirs", "");
 
     // create the directory using the default permission
     boolean result = fs.mkdirs(dir);
@@ -1569,6 +1569,7 @@ public abstract class FileSystem extends Configured implements Closeable {
    */
   public boolean exists(Path f) throws IOException {
     hprof.writeLogMessage(MessageType.META, "exists", f.toString());
+    hprof.writeLogMessage(MessageType.META, "exists", "f.toString()");
 
     try {
       return getFileStatus(f) != null;
