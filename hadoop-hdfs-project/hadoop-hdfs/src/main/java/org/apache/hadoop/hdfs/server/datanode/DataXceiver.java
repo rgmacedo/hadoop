@@ -594,7 +594,7 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(cachingStrategy.toString());
 
 
-    hprof.writeLogMessage(MessageType.DATA, "readBlock", sb.toString());
+    hprof.writeLogMessage(HProf.MessageType.DATA, "readBlock", sb.toString());
     // LOG.info("Hprof: DATA readBlock "+sb.toString());
     // LOG.info("Hprof: DATA readBlock ...");
 
@@ -737,7 +737,7 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(" | ");
     sb.append(pinning);
 
-    hprof.writeLogMessage(MessageType.DATA, "writeBlock", sb.toString());
+    hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
     // LOG.info("Hprof: DATA writeBlock "+sb.toString());
     // LOG.info("Hprof: DATA writeBlock ...");
 
