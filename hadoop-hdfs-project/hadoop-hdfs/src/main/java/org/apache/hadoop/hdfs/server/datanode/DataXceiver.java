@@ -1514,7 +1514,7 @@ class DataXceiver extends Receiver implements Runnable {
         // LOG.info(">> HProf.initHprofWriter");
         try {
             if (this.pathHprofFile != null) {
-                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathHprofFile;
+                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathHprofFile)));
             }
         } catch (Exception e) {
             e.printStackTrace();
