@@ -608,7 +608,7 @@ class DataXceiver extends Receiver implements Runnable {
 
     String blockInfo = 
           "{" + block.getLocalBlock() + 
-          "," + black.getBlockPoolId() + 
+          "," + block.getBlockPoolId() + 
           "," + block.getBlockId() + 
           "," + block.getGenerationStamp() + 
           "," + block.getNumBytes() + 
