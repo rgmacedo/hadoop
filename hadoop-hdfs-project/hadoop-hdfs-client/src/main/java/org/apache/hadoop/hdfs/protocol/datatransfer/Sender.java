@@ -20,9 +20,34 @@ package org.apache.hadoop.hdfs.protocol.datatransfer;
 import static org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil.toProto;
 
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -175,7 +200,7 @@ public class Sender implements DataTransferProtocol {
     sb.append(" | ");
     sb.append(storageType);
     sb.append(" | ");
-    sb.append(clientname);
+    sb.append(clientName);
     sb.append(" | ");
     sb.append(Arrays.asList(targets));
     sb.append(" | ");
