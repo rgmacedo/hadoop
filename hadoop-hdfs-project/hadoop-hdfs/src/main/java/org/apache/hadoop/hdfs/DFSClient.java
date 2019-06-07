@@ -607,6 +607,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   
   public DFSClient(InetSocketAddress address, Configuration conf) throws IOException {
     this(NameNode.getUri(address), conf);
+    LOG.info("HProf  DfsClient (address, conf)");
   }
 
   /**
@@ -616,6 +617,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public DFSClient(URI nameNodeUri, Configuration conf
       ) throws IOException {
     this(nameNodeUri, conf, null);
+    LOG.info("HProf  DfsClient (nameNodeUri, conf)");
   }
 
   /**
@@ -626,6 +628,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
                    FileSystem.Statistics stats)
     throws IOException {
     this(nameNodeUri, null, conf, stats);
+    LOG.info("HProf  DfsClient (nameNodeUri, conf, stats)");
   }
   
   /** 
@@ -640,6 +643,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public DFSClient(URI nameNodeUri, ClientProtocol rpcNamenode,
       Configuration conf, FileSystem.Statistics stats)
     throws IOException {
+
+    LOG.info("HProf  DfsClient (nameNodeUri, rpcNamenode, conf, stats)");
+
     SpanReceiverHost.get(conf, DFSConfigKeys.DFS_CLIENT_HTRACE_PREFIX);
     traceSampler = new SamplerBuilder(TraceUtils.
         wrapHadoopConf(DFSConfigKeys.DFS_CLIENT_HTRACE_PREFIX, conf)).build();
