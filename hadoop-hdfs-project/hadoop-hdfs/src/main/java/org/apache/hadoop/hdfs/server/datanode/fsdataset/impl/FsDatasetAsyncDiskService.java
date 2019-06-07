@@ -214,8 +214,16 @@ class FsDatasetAsyncDiskService {
    */
   void deleteAsync(FsVolumeReference volumeRef, File blockFile, File metaFile,
       ExtendedBlock block, String trashDirectory) {
-    LOG.info("Scheduling " + block.getLocalBlock()
-        + " file " + blockFile + " for deletion");
+
+    String additionalLogMessage = 
+          "{" + blockFile.getAbsolutePath() + 
+          "," + blockFile.getTotalSpace() +
+          "," + metaFile.getAbsolutePath() +
+          "," + metaFile.getTotalSpace() + 
+          "," + trashDirectory + "}";
+
+    LOG.info("Scheduling " + block.getLocalBlock() + " file " + blockFile + " for deletion " + " - " + additionalLogMessage);
+    
     ReplicaFileDeleteTask deletionTask = new ReplicaFileDeleteTask(
         volumeRef, blockFile, metaFile, block, trashDirectory);
     execute(((FsVolumeImpl) volumeRef.getVolume()).getCurrentDir(), deletionTask);
@@ -227,7 +235,16 @@ class FsDatasetAsyncDiskService {
    */
   void deleteSync(FsVolumeReference volumeRef, File blockFile, File metaFile,
       ExtendedBlock block, String trashDirectory) {
-    LOG.info("Deleting " + block.getLocalBlock() + " file " + blockFile);
+
+    String additionalLogMessage = 
+      "{" + blockFile.getAbsolutePath() + 
+      "," + blockFile.getTotalSpace() +
+      "," + metaFile.getAbsolutePath() +
+      "," + metaFile.getTotalSpace() + 
+      "," + trashDirectory + "}";
+
+        LOG.info("Deleting " + block.getLocalBlock() + " file " + blockFile + " - " + additionalLogMessage);
+
     ReplicaFileDeleteTask deletionTask = new ReplicaFileDeleteTask(
         volumeRef, blockFile, metaFile, block, trashDirectory);
     deletionTask.run();

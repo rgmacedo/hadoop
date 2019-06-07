@@ -85,13 +85,11 @@ import com.google.protobuf.Message;
 @InterfaceStability.Evolving
 public class Sender implements DataTransferProtocol {
   private final DataOutputStream out;
-  public static HProf hprof;
 
 
   /** Create a sender for DataTransferProtocol with a output stream. */
   public Sender(final DataOutputStream out) {
     this.out = out;
-    hprof = new HProf("Sender");
   }
 
   /** Initialize a operation. */
@@ -130,30 +128,6 @@ public class Sender implements DataTransferProtocol {
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("B{");
-    sb.append(blk.getBlockPoolId());
-    sb.append(" | ");
-    sb.append(blk.getBlockId());
-    sb.append(" | ");
-    sb.append(blk.getGenerationStamp());
-    sb.append(" | ");
-    sb.append(blk.getNumBytes());
-    sb.append("}");
-    sb.append(" | ");
-    sb.append(clientName);
-    sb.append(" | ");
-    sb.append(blockOffset);
-    sb.append(" | ");
-    sb.append(length);
-    sb.append(" | ");
-    sb.append(cachingStrategy.toString());
-
-
-    hprof.writeLogMessage(HProf.MessageType.DATA, "readBlock", sb.toString());
-    // LOG.info("Hprof: DATA readBlock "+sb.toString());
-    // LOG.info("Hprof: DATA readBlock ...");
-
     OpReadBlockProto proto = OpReadBlockProto.newBuilder()
         .setHeader(DataTransferProtoUtil.buildClientHeader(blk, clientName,
             blockToken))
@@ -185,48 +159,6 @@ public class Sender implements DataTransferProtocol {
       final boolean allowLazyPersist,
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
-
-    hprof.initHprofWriter();
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("B{");
-    sb.append(blk.getBlockPoolId());
-    sb.append(" | ");
-    sb.append(blk.getBlockId());
-    sb.append(" | ");
-    sb.append(blk.getGenerationStamp());
-    sb.append(" | ");
-    sb.append(blk.getNumBytes());
-    sb.append("}");
-    sb.append(" | ");
-    sb.append(storageType);
-    sb.append(" | ");
-    sb.append(clientName);
-    sb.append(" | ");
-    sb.append(Arrays.asList(targets));
-    sb.append(" | ");
-    sb.append(source.toString());
-    sb.append(" | ");
-    sb.append(stage.toString());
-    sb.append(" | ");
-    sb.append(pipelineSize);
-    sb.append(" | ");
-    sb.append(minBytesRcvd);
-    sb.append(" | ");
-    sb.append(maxBytesRcvd);
-    sb.append(" | ");
-    sb.append(latestGenerationStamp);
-    sb.append(" | ");
-    sb.append(cachingStrategy.toString());
-    sb.append(" | ");
-    sb.append(allowLazyPersist);
-    
-
-    hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
-    // LOG.info("Hprof: DATA writeBlock "+sb.toString());
-    // LOG.info("Hprof: DATA writeBlock ...");
-
-    hprof.closeHprofWriter();
 
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
         blk, clientName, blockToken);
@@ -357,63 +289,6 @@ public class Sender implements DataTransferProtocol {
         .build();
 
     send(out, Op.BLOCK_CHECKSUM, proto);
-  }
-
-  static class HProf {
-    public String pathHprofFile;
-    public Writer hprofWriter;
-    
-    public enum MessageType {
-        BACK, DATA, META, HPROF
-    };
-    
-    
-    /**
-     * HProf class HProf is a Hadoop-based profile that profiles user-defined
-     * messages.
-     */
-    public HProf(String classpath) {
-      this.pathHprofFile = "/home/hduser/dfs/cloud-" + classpath + "-hprof.log";
-      File path = new File(this.pathHprofFile);
-      
-      // this.initHprofWriter();
-      
-    }
-
-    public void initHprofWriter() {
-        // LOG.info(">> HProf.initHprofWriter");
-        try {
-            if (this.pathHprofFile != null) {
-                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathHprofFile)));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void writeLogMessage(MessageType type, String method, String message) {
-        try {
-            this.hprofWriter.append(System.currentTimeMillis() + " " + type.toString() + " " + method + ": " + message + "\n");
-            this.hprofWriter.flush();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 
-     * There is no need to flush the stream, since close() already does that.
-     */
-    public void closeHprofWriter() {
-        // LOG.info(">> HProf.closeHprofWriter");
-        try {
-            hprofWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
   }
 
 }

@@ -55,9 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
-// import org.apache.hadoop.fs.HProf;
 import org.apache.hadoop.fs.StorageType;
-// import org.apache.hadoop.fs.HProf.MessageType;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.net.Peer;
@@ -142,7 +140,7 @@ class DataXceiver extends Receiver implements Runnable {
       DataXceiverServer dataXceiverServer) throws IOException {
     super(datanode.tracer);
 
-    hprof = new HProf("DataXceiver");
+    // hprof = new HProf("DataXceiver");
     
     this.peer = peer;
     this.dnConf = datanode.getDnConf();
@@ -582,7 +580,7 @@ class DataXceiver extends Receiver implements Runnable {
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
 
-    hprof.initHprofWriter();
+    // hprof.initHprofWriter();
 
     StringBuilder sb = new StringBuilder();
     sb.append("B{");
@@ -604,13 +602,20 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(cachingStrategy.toString());
 
 
-    hprof.writeLogMessage(HProf.MessageType.DATA, "readBlock", sb.toString());
-    // LOG.info("Hprof: DATA readBlock "+sb.toString());
-    // LOG.info("Hprof: DATA readBlock ...");
+    // hprof.writeLogMessage(HProf.MessageType.DATA, "readBlock", sb.toString());
+    // hprof.closeHprofWriter();
+    // LOG.info("HProf  readBlock  "+sb.toString());
 
-    hprof.closeHprofWriter();
+    String blockInfo = 
+          "{" + block.getLocalBlock() + 
+          "," + getBlockPoolId() + 
+          "," + block.getBlockId() + 
+          "," + block.getGenerationStamp() + 
+          "," + block.getNumBytes() + 
+          "," + blockOffset + 
+          "," + length + "}";
 
-    LOG.info("HProf  readBlock  "+sb.toString());
+    LOG.info("Reading " + block + " " + blockInfo);
 
     previousOpClientName = clientName;
     long read = 0;
@@ -673,6 +678,9 @@ class DataXceiver extends Receiver implements Runnable {
       datanode.metrics.incrBytesRead((int) read);
       datanode.metrics.incrBlocksRead();
       datanode.metrics.incrTotalReadTime(duration);
+
+      LOG.info("Reading reports" + block + "," + read + "," + duration);
+
     } catch ( SocketException ignored ) {
       if (LOG.isTraceEnabled()) {
         LOG.trace(dnR + ":Ignoring exception while serving " + block + " to " +
@@ -719,48 +727,44 @@ class DataXceiver extends Receiver implements Runnable {
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
 
-    hprof.initHprofWriter();
+    // hprof.initHprofWriter();
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("B{");
-    sb.append(block.getBlockPoolId());
-    sb.append(" | ");
-    sb.append(block.getBlockId());
-    sb.append(" | ");
-    sb.append(block.getGenerationStamp());
-    sb.append(" | ");
-    sb.append(block.getNumBytes());
-    sb.append("}");
-    sb.append(" | ");
-    sb.append(storageType);
-    sb.append(" | ");
-    sb.append(clientname);
-    sb.append(" | ");
-    sb.append(Arrays.asList(targets));
-    sb.append(" | ");
-    sb.append(srcDataNode.toString());
-    sb.append(" | ");
-    sb.append(stage.toString());
-    sb.append(" | ");
-    sb.append(pipelineSize);
-    sb.append(" | ");
-    sb.append(minBytesRcvd);
-    sb.append(" | ");
-    sb.append(maxBytesRcvd);
-    sb.append(" | ");
-    sb.append(latestGenerationStamp);
-    sb.append(" | ");
-    sb.append(cachingStrategy.toString());
-    sb.append(" | ");
-    sb.append(allowLazyPersist);
-    
-
-    hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
-    // LOG.info("Hprof: DATA writeBlock "+sb.toString());
-    // LOG.info("Hprof: DATA writeBlock ...");
-    hprof.closeHprofWriter();
-
-    LOG.info("HProf  writeBlock  "+sb.toString());
+    // StringBuilder sb = new StringBuilder();
+    // sb.append("B{");
+    // sb.append(block.getBlockPoolId());
+    // sb.append(" | ");
+    // sb.append(block.getBlockId());
+    // sb.append(" | ");
+    // sb.append(block.getGenerationStamp());
+    // sb.append(" | ");
+    // sb.append(block.getNumBytes());
+    // sb.append("}");
+    // sb.append(" | ");
+    // sb.append(storageType);
+    // sb.append(" | ");
+    // sb.append(clientname);
+    // sb.append(" | ");
+    // sb.append(Arrays.asList(targets));
+    // sb.append(" | ");
+    // sb.append(srcDataNode.toString());
+    // sb.append(" | ");
+    // sb.append(stage.toString());
+    // sb.append(" | ");
+    // sb.append(pipelineSize);
+    // sb.append(" | ");
+    // sb.append(minBytesRcvd);
+    // sb.append(" | ");
+    // sb.append(maxBytesRcvd);
+    // sb.append(" | ");
+    // sb.append(latestGenerationStamp);
+    // sb.append(" | ");
+    // sb.append(cachingStrategy.toString());
+    // sb.append(" | ");
+    // sb.append(allowLazyPersist);
+  
+    // hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
+    // hprof.closeHprofWriter();
+    // LOG.info("HProf  writeBlock  "+sb.toString());
 
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);
@@ -802,8 +806,15 @@ class DataXceiver extends Receiver implements Runnable {
     if (block.getNumBytes() == 0) {
       block.setNumBytes(dataXceiverServer.estimateBlockSize);
     }
-    LOG.info("Receiving " + block + " src: " + remoteAddress + " dest: "
-        + localAddress);
+
+    String blockInfo = 
+          "{" + block.getLocalBlock() +
+          "," + block.getBlockPoolId() + 
+          "," + block.getBlockId() + 
+          "," + block.getGenerationStamp() + 
+          "," + block.getNumBytes() + "}";
+
+    LOG.info("Receiving " + block + " src: " + remoteAddress + " dest: " + localAddress + " " + blockInfo);
 
     DataOutputStream mirrorOut = null;  // stream to next target
     DataInputStream mirrorIn = null;    // reply from next target
@@ -1020,6 +1031,9 @@ class DataXceiver extends Receiver implements Runnable {
       datanode.transferReplicaForPipelineRecovery(blk, targets,
           targetStorageTypes, clientName);
       writeResponse(Status.SUCCESS, null, out);
+
+      LOG.info("Transfer block "+ blk + "," + Arrays.toString(targets));
+      
     } catch (IOException ioe) {
       LOG.info("transferBlock " + blk + " received exception " + ioe);
       incrDatanodeNetworkErrors();
@@ -1522,7 +1536,6 @@ class DataXceiver extends Receiver implements Runnable {
     }
 
     public void initHprofWriter() {
-        // LOG.info(">> HProf.initHprofWriter");
         try {
             if (this.pathHprofFile != null) {
                 this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathHprofFile)));
@@ -1542,12 +1555,7 @@ class DataXceiver extends Receiver implements Runnable {
         }
     }
 
-    /**
-     * 
-     * There is no need to flush the stream, since close() already does that.
-     */
     public void closeHprofWriter() {
-        // LOG.info(">> HProf.closeHprofWriter");
         try {
             hprofWriter.close();
         } catch (Exception e) {
