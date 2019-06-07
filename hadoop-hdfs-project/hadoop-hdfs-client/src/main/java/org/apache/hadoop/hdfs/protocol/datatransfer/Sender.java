@@ -373,14 +373,8 @@ public class Sender implements DataTransferProtocol {
       this.pathHprofFile = "/home/hduser/dfs/cloud-" + classpath + "-hprof.log";
       File path = new File(this.pathHprofFile);
       
-      synchronized (path) {
-        if (!path.exists()) {
-          this.initHprofWriter();
-          this.writeLogMessage(MessageType.HPROF, ":Hadoop Distributed File System Profiling >>\n", "");
-        } else {
-          this.initHprofWriter();
-        }
-      }
+      this.initHprofWriter();
+      
     }
 
     public void initHprofWriter() {
