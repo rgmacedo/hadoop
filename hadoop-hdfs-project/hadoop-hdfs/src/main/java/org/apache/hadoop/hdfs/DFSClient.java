@@ -1052,8 +1052,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
    * be returned if the client is not using tokens.
    * @return the token service for the client
    */
-  @InterfaceAudience.LimitedPrivate( { "HDFS" }) namenode.getPreferredBlockSize(f)
-  public String getCanonicalServiceName() {namenode.getPreferredBlockSize(f)
+  @InterfaceAudience.LimitedPrivate( { "HDFS" })
+  public String getCanonicalServiceName() {
     return (dtService != null) ? dtService.toString() : null;
   }
   
