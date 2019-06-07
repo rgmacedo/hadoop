@@ -33,6 +33,7 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,6 +48,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.channels.ClosedChannelException;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -581,15 +583,21 @@ class DataXceiver extends Receiver implements Runnable {
       final CachingStrategy cachingStrategy) throws IOException {
 
     StringBuilder sb = new StringBuilder();
-    sb.append(block.toString());
+    sb.append("B{");
+    sb.append(block.getBlockPoolId());
+    sb.append(" | ");
+    sb.append(block.getBlockId());
+    sb.append(" | ");
+    sb.append(block.getGenerationStamp());
+    sb.append(" | ");
+    sb.append(block.getNumBytes());
+    sb.append("}");
     sb.append(" | ");
     sb.append(clientName);
     sb.append(" | ");
     sb.append(blockOffset);
     sb.append(" | ");
     sb.append(length);
-    sb.append(" | ");
-    sb.append(sendChecksum);
     sb.append(" | ");
     sb.append(cachingStrategy.toString());
 
@@ -707,15 +715,21 @@ class DataXceiver extends Receiver implements Runnable {
 
 
     StringBuilder sb = new StringBuilder();
-    sb.append(block.toString());
+    sb.append("B{");
+    sb.append(block.getBlockPoolId());
+    sb.append(" | ");
+    sb.append(block.getBlockId());
+    sb.append(" | ");
+    sb.append(block.getGenerationStamp());
+    sb.append(" | ");
+    sb.append(block.getNumBytes());
+    sb.append("}");
     sb.append(" | ");
     sb.append(storageType);
     sb.append(" | ");
     sb.append(clientname);
     sb.append(" | ");
     sb.append(Arrays.asList(targets));
-    sb.append(" | ");
-    sb.append(Arrays.asList(targetStorageTypes));
     sb.append(" | ");
     sb.append(srcDataNode.toString());
     sb.append(" | ");
@@ -729,13 +743,10 @@ class DataXceiver extends Receiver implements Runnable {
     sb.append(" | ");
     sb.append(latestGenerationStamp);
     sb.append(" | ");
-    sb.append(requestedChecksum.toString());
-    sb.append(" | ");
     sb.append(cachingStrategy.toString());
     sb.append(" | ");
     sb.append(allowLazyPersist);
-    sb.append(" | ");
-    sb.append(pinning);
+    
 
     hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
     // LOG.info("Hprof: DATA writeBlock "+sb.toString());
@@ -1473,8 +1484,7 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   static class HProf {
-    public final String pathHprofFile = "/home/hduser/dfs/";
-    public String hprofFile;
+    public String pathHprofFile;
     public Writer hprofWriter;
     
     public enum MessageType {
@@ -1487,36 +1497,24 @@ class DataXceiver extends Receiver implements Runnable {
      * messages.
      */
     public HProf(String classpath) {
-
-        this.hprofFile = this.generateLogFile(classpath);
-        this.initHprofWriter();
-
-    }
-
-    public String generateLogFile(String classpath) {
-        String logFile = null;
-
-        try {
-            logFile = 
-                this.pathHprofFile + 
-                "cloud-" + 
-                classpath +
-                "-" + 
-                System.currentTimeMillis() +
-                ".log";
-        } catch (Exception e) {
-            e.printStackTrace();
+      this.pathHprofFile = "/home/hduser/dfs/cloud-hprof.log";
+      File path = new File(this.pathHprofFile);
+      
+      synchronized (path) {
+        if (!path.exists()) {
+          this.initHprofWriter();
+          this.writeLogMessage(MessageType.HPROF, ":Hadoop Distributed File System Profiling >>\n", "");
+        } else {
+          this.initHprofWriter();
         }
-
-        return logFile;
+      }
     }
-
 
     public void initHprofWriter() {
         // LOG.info(">> HProf.initHprofWriter");
         try {
-            if (this.hprofFile != null) {
-                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.hprofFile)));
+            if (this.pathHprofFile != null) {
+                this.hprofWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathHprofFile;
             }
         } catch (Exception e) {
             e.printStackTrace();
