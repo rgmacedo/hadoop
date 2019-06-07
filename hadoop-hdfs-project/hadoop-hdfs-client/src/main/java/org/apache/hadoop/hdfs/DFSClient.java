@@ -274,6 +274,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
    */
   public DFSClient(URI nameNodeUri, Configuration conf) throws IOException {
     this(nameNodeUri, conf, null);
+    LOG.info("HProf  DfsClient (nameNodeUri, conf)");
   }
 
   /**
@@ -283,6 +284,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public DFSClient(URI nameNodeUri, Configuration conf,
       FileSystem.Statistics stats) throws IOException {
     this(nameNodeUri, null, conf, stats);
+    LOG.info("HProf  DfsClient (nameNodeUri, conf, stats)");
   }
 
   /**
@@ -296,6 +298,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   @VisibleForTesting
   public DFSClient(URI nameNodeUri, ClientProtocol rpcNamenode,
       Configuration conf, FileSystem.Statistics stats) throws IOException {
+
+    LOG.info("HProf  DfsClient (nameNodeUri, rpcNamenode, conf, stats)");
+
     // Copy only the required DFSClient configuration
     this.tracer = FsTracer.get(conf);
     this.dfsClientConf = new DfsClientConf(conf);

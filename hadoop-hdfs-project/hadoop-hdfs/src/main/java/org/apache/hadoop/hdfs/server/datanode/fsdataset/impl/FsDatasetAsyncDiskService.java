@@ -216,10 +216,8 @@ class FsDatasetAsyncDiskService {
       ExtendedBlock block, String trashDirectory) {
 
     String additionalLogMessage = 
-          "{" + blockFile.getAbsolutePath() + 
-          "," + blockFile.getTotalSpace() +
-          "," + metaFile.getAbsolutePath() +
-          "," + metaFile.getTotalSpace() + 
+          "{" + blockFile.getPath() + 
+          "," + metaFile.getPath() +
           "," + trashDirectory + "}";
 
     LOG.info("Scheduling " + block.getLocalBlock() + " file " + blockFile + " for deletion " + " - " + additionalLogMessage);
@@ -237,10 +235,8 @@ class FsDatasetAsyncDiskService {
       ExtendedBlock block, String trashDirectory) {
 
     String additionalLogMessage = 
-      "{" + blockFile.getAbsolutePath() + 
-      "," + blockFile.getTotalSpace() +
-      "," + metaFile.getAbsolutePath() +
-      "," + metaFile.getTotalSpace() + 
+      "{" + blockFile.getPath() + 
+      "," + metaFile.getPath() +
       "," + trashDirectory + "}";
 
         LOG.info("Deleting " + block.getLocalBlock() + " file " + blockFile + " - " + additionalLogMessage);
