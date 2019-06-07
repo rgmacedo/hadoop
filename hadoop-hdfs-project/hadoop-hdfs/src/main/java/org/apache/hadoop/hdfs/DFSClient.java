@@ -81,6 +81,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -607,7 +608,12 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   
   public DFSClient(InetSocketAddress address, Configuration conf) throws IOException {
     this(NameNode.getUri(address), conf);
-    LOG.info("HProf  DfsClient (address, conf)");
+
+    String additionalMessage = 
+      " - " + address.toString() + 
+      " , " + NameNode.getUri(address);
+
+    LOG.info("HProf  DfsClient " + additionalMessage);
   }
 
   /**
@@ -617,7 +623,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public DFSClient(URI nameNodeUri, Configuration conf
       ) throws IOException {
     this(nameNodeUri, conf, null);
-    LOG.info("HProf  DfsClient (nameNodeUri, conf)");
+
+    String additionalMessage = 
+      " - " + nameNodeUri.toString();
+
+    LOG.info("HProf  DfsClient " + additionalMessage);
   }
 
   /**
@@ -628,7 +638,12 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
                    FileSystem.Statistics stats)
     throws IOException {
     this(nameNodeUri, null, conf, stats);
-    LOG.info("HProf  DfsClient (nameNodeUri, conf, stats)");
+
+    String additionalMessage = 
+      " - " + nameNodeUri.toString() + 
+      " , " + stats.toString();
+
+    LOG.info("HProf  DfsClient " + additionalMessage);
   }
   
   /** 
@@ -644,7 +659,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       Configuration conf, FileSystem.Statistics stats)
     throws IOException {
 
-    LOG.info("HProf  DfsClient (nameNodeUri, rpcNamenode, conf, stats)");
+    String additionalMessage = 
+      " - " + nameNodeUri.toString() +
+      " , " + stats.toString();
+
+    LOG.info("HProf  DfsClient " + additionalMessage);
 
     SpanReceiverHost.get(conf, DFSConfigKeys.DFS_CLIENT_HTRACE_PREFIX);
     traceSampler = new SamplerBuilder(TraceUtils.
@@ -999,7 +1018,12 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public long getBlockSize(String f) throws IOException {
     TraceScope scope = getPathTraceScope("getBlockSize", f);
     try {
-      return namenode.getPreferredBlockSize(f);
+      long blocksize = namenode.getPreferredBlockSize(f);
+      
+      LOG.info("HProf  getBlockSize  - " + f + ", " + blocksize);
+      
+      return blocksize;
+      // return namenode.getPreferredBlockSize(f);
     } catch (IOException ie) {
       LOG.warn("Problem getting block size", ie);
       throw ie;
@@ -1028,8 +1052,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
    * be returned if the client is not using tokens.
    * @return the token service for the client
    */
-  @InterfaceAudience.LimitedPrivate( { "HDFS" }) 
-  public String getCanonicalServiceName() {
+  @InterfaceAudience.LimitedPrivate( { "HDFS" }) namenode.getPreferredBlockSize(f)
+  public String getCanonicalServiceName() {namenode.getPreferredBlockSize(f)
     return (dtService != null) ? dtService.toString() : null;
   }
   
@@ -1205,6 +1229,17 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
    */
   public void reportBadBlocks(LocatedBlock[] blocks) throws IOException {
     namenode.reportBadBlocks(blocks);
+
+    StringBuilder additionalMessage = new StringBuilder();
+    for (LocatedBlock b : blocks) {
+      additionalMessage.append(b.getBlock().getBlockId());
+      additionalMessage.append(", ");
+      additionalMessage.append(b.getBlockSize());
+      additionalMessage.append(", ");
+      additionalMessage.append(b.getStartOffset());
+    }
+
+    LOG.info("HProf  reportBadBlocks  - " + additionalMessage.toString());
   }
   
   public short getDefaultReplication() {
@@ -1238,6 +1273,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       String src, long start, long length) 
       throws IOException {
     try {
+      LOG.info("HProf  namenode.getBlockLocations");
+
       return namenode.getBlockLocations(src, start, length);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -1289,6 +1326,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       for (int i = 0; i < locations.length; i++) {
         hdfsLocations[i] = new HdfsBlockLocation(locations[i], blocks.get(i));
       }
+
+      LOG.info("HProf  getBlockLocations  - " + src + ", " + start + ", " + length);
+
       return hdfsLocations;
     } finally {
       scope.close();
@@ -1372,6 +1412,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     BlockStorageLocation[] volumeBlockLocations = BlockStorageLocationUtil
         .convertToVolumeBlockLocations(blocks, blockVolumeIds);
 
+    LOG.info("HProf  getBlockStorageLocations");
+      
     return volumeBlockLocations;
   }
 
@@ -1706,6 +1748,20 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
         buffersize, dfsClientConf.createChecksum(checksumOpt),
         getFavoredNodesStr(favoredNodes));
     beginFileLease(result.getFileId(), result);
+
+    StringBuilder additionalMessage = new StringBuilder();
+    additionalMessage.append(src);
+    additionalMessage.append(", ");
+    additionalMessage.append(createParent);
+    additionalMessage.append(", ");
+    additionalMessage.append(replication);
+    additionalMessage.append(", ");
+    additionalMessage.append(blockSize);
+    additionalMessage.append(", ");
+    additionalMessage.append(buffersize);
+
+    LOG.info("HProf  create  - " + additionalMessage.toString());
+
     return result;
   }
 
@@ -1828,6 +1884,14 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
             "info with additional RPC call for file: " + src);
         status = getFileInfo(src);
       }
+
+      StringBuilder additionalMessage = new StringBuilder();
+      additionalMessage.append(src);
+      additionalMessage.append(", ");
+      additionalMessage.append(buffersize);
+
+      LOG.info("HProf  callAppend  - " + additionalMessage.toString());
+
       return DFSOutputStream.newStreamForAppend(this, src, flag, buffersize,
           progress, blkWithStatus.getLastBlock(),
           status, dfsClientConf.createChecksum(),
@@ -1906,6 +1970,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       throws IOException {
     TraceScope scope = getPathTraceScope("setReplication", src);
     try {
+      LOG.info("HProf  setReplication  - " + src + ", " + replication);
+
       return namenode.setReplication(src, replication);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -2056,6 +2122,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = getPathTraceScope("delete", src);
     try {
+      LOG.info("HProf  delete  - " + src + ", " + recursive);
+
       return namenode.delete(src, recursive);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -2072,6 +2140,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
    */
   public boolean exists(String src) throws IOException {
     checkOpen();
+
+    LOG.info("HProf  exists  - " + src);
+
     return getFileInfo(src) != null;
   }
 
@@ -2501,7 +2572,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("getStats", traceSampler);
     try {
-      return namenode.getStats();
+      long[] stats = namenode.getStats();
+      LOG.info("HProf  callGetStats  - " + Arrays.toString(stats));
+
+      return stats;
+      // return namenode.getStats();
     } finally {
       scope.close();
     }
@@ -2761,6 +2836,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("addCacheDirective", traceSampler);
     try {
+      LOG.info("HProf  addCacheDirective");
+
       return namenode.addCacheDirective(info, flags);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -2774,6 +2851,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("modifyCacheDirective", traceSampler);
     try {
+      LOG.info("HProf  modifyCacheDirective");
+
       namenode.modifyCacheDirective(info, flags);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -2787,6 +2866,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("removeCacheDirective", traceSampler);
     try {
+      LOG.info("HProf  removeCacheDirective");
+
       namenode.removeCacheDirective(id);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -2804,6 +2885,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("addCachePool", traceSampler);
     try {
+      LOG.info("HProf  addCachePool");
+
       namenode.addCachePool(info);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -2816,6 +2899,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("modifyCachePool", traceSampler);
     try {
+      LOG.info("HProf  modifyCachePool");
+
       namenode.modifyCachePool(info);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -2828,6 +2913,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = Trace.startSpan("removeCachePool", traceSampler);
     try {
+      LOG.info("HProf  removeCachePool");
+
       namenode.removeCachePool(poolName);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException();
@@ -3017,6 +3104,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     }
     TraceScope scope = Trace.startSpan("mkdir", traceSampler);
     try {
+
+      LOG.info("HProf  primitiveMkdir  - " + src);
+
       return namenode.mkdirs(src, absPermission, createParent);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -3125,6 +3215,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     TraceScope scope = getPathTraceScope("setTimes", src);
     try {
+      LOG.info("HProf  setTimes  - " + src + ", " + mtime + ", " + atime);
+
       namenode.setTimes(src, mtime, atime);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
@@ -3170,10 +3262,14 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   }
 
   public CachingStrategy getDefaultReadCachingStrategy() {
+    LOG.info("HProf  getDefaultReadCachingStrategy  - " + defaultReadCachingStrategy.toString());
+
     return defaultReadCachingStrategy;
   }
 
   public CachingStrategy getDefaultWriteCachingStrategy() {
+    LOG.info("HProf  getDefaultWriteCachingStrategy  - " + defaultWriteCachingStrategy.toString());
+
     return defaultWriteCachingStrategy;
   }
 
@@ -3329,6 +3425,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     TraceScope scope = getPathTraceScope("setXAttr", src);
     try {
       namenode.setXAttr(src, XAttrHelper.buildXAttr(name, value), flag);
+
+      LOG.info("HProf  setXAttr  - " + src + ", " + name);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
                                      FileNotFoundException.class,
@@ -3347,6 +3445,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     try {
       final List<XAttr> xAttrs = XAttrHelper.buildXAttrAsList(name);
       final List<XAttr> result = namenode.getXAttrs(src, xAttrs);
+
+      LOG.info("HProf  getXAttr  - " + src + ", " + name);
+
       return XAttrHelper.getFirstXAttrValue(result);
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,

@@ -1454,6 +1454,9 @@ implements ByteBufferReadable, CanSetDropBehind, CanSetReadahead,
     if (dfsClient.stats != null) {
       dfsClient.stats.incrementBytesRead(realLen);
     }
+
+    DFSClient.LOG.info("HProf  (p)read  " + position + ", " + offset + ", " + length);
+
     return realLen;
   }
   
