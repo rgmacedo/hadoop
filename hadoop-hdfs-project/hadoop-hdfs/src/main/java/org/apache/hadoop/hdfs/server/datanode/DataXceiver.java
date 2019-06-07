@@ -1497,7 +1497,7 @@ class DataXceiver extends Receiver implements Runnable {
      * messages.
      */
     public HProf(String classpath) {
-      this.pathHprofFile = "/home/hduser/dfs/cloud-hprof.log";
+      this.pathHprofFile = "/home/hduser/dfs/cloud-" + classpath + "-hprof.log";
       File path = new File(this.pathHprofFile);
       
       synchronized (path) {
