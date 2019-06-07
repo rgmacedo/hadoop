@@ -582,6 +582,8 @@ class DataXceiver extends Receiver implements Runnable {
       final boolean sendChecksum,
       final CachingStrategy cachingStrategy) throws IOException {
 
+    hprof.initHprofWriter();
+
     StringBuilder sb = new StringBuilder();
     sb.append("B{");
     sb.append(block.getBlockPoolId());
@@ -605,6 +607,10 @@ class DataXceiver extends Receiver implements Runnable {
     hprof.writeLogMessage(HProf.MessageType.DATA, "readBlock", sb.toString());
     // LOG.info("Hprof: DATA readBlock "+sb.toString());
     // LOG.info("Hprof: DATA readBlock ...");
+
+    hprof.closeHprofWriter();
+
+    LOG.info("HProf  readBlock  "+sb.toString());
 
     previousOpClientName = clientName;
     long read = 0;
@@ -713,6 +719,7 @@ class DataXceiver extends Receiver implements Runnable {
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
 
+    hprof.initHprofWriter();
 
     StringBuilder sb = new StringBuilder();
     sb.append("B{");
@@ -751,6 +758,9 @@ class DataXceiver extends Receiver implements Runnable {
     hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
     // LOG.info("Hprof: DATA writeBlock "+sb.toString());
     // LOG.info("Hprof: DATA writeBlock ...");
+    hprof.closeHprofWriter();
+
+    LOG.info("HProf  writeBlock  "+sb.toString());
 
     previousOpClientName = clientname;
     updateCurrentThreadName("Receiving block " + block);
@@ -1508,7 +1518,7 @@ class DataXceiver extends Receiver implements Runnable {
       //     this.initHprofWriter();
       //   }
       // }
-      this.initHprofWriter();
+      // this.initHprofWriter();
     }
 
     public void initHprofWriter() {

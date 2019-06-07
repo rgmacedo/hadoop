@@ -186,6 +186,7 @@ public class Sender implements DataTransferProtocol {
       final boolean pinning,
       final boolean[] targetPinnings) throws IOException {
 
+    hprof.initHprofWriter();
 
     StringBuilder sb = new StringBuilder();
     sb.append("B{");
@@ -224,6 +225,8 @@ public class Sender implements DataTransferProtocol {
     hprof.writeLogMessage(HProf.MessageType.DATA, "writeBlock", sb.toString());
     // LOG.info("Hprof: DATA writeBlock "+sb.toString());
     // LOG.info("Hprof: DATA writeBlock ...");
+
+    hprof.closeHprofWriter();
 
     ClientOperationHeaderProto header = DataTransferProtoUtil.buildClientHeader(
         blk, clientName, blockToken);
@@ -373,7 +376,7 @@ public class Sender implements DataTransferProtocol {
       this.pathHprofFile = "/home/hduser/dfs/cloud-" + classpath + "-hprof.log";
       File path = new File(this.pathHprofFile);
       
-      this.initHprofWriter();
+      // this.initHprofWriter();
       
     }
 
